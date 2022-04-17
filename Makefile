@@ -9,9 +9,7 @@ install_raku:
 	which raku > /dev/null || sudo apt-get install rakudo
 
 .PHONY: podman_run
-podman_run:
-	-podman machine start
-	podman build -t text-adventure .
+podman_run: podman_build
 	podman run -it text-adventure /bin/bash -c 'raku text-adventure.raku'
 
 .PHONY: podman_install
@@ -29,9 +27,23 @@ podman_start:
 podman_stop:
 	podman machine stop
 
+.PHONY: podman_build
+podman_build:
+	-podman machine start
+	podman build -t text-adventure .
+
 .PHONY: podman_cleanup
 podman_cleanup:
 	podman container list --all
 	podman kill -a
 	podman rmi -fa
 	podman container list --all
+
+.PHONY: podman_repl
+podman_repl: podman_build
+	podman run -it text-adventure /bin/bash -c raku
+
+.PHONY: pc pr r
+pc: podman_repl
+pr: podman_run
+r: run
